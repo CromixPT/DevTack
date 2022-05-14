@@ -1,5 +1,6 @@
 using System.Net;
-using DevTrack.Application.Features.DispatchPackage;
+using DevTrack.Application.Features.Packages.DispatchPackage;
+using DevTrack.Application.Features.Packages.UpdatePackageStatus;
 using DevTrack.Domain.Entities;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
@@ -42,7 +43,7 @@ namespace DevTrack.API.Controllers
         [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
         [ProducesResponseType(typeof(ProblemDetails), (int)HttpStatusCode.BadRequest)]
         [ProducesResponseType(typeof(DispatchPackage.Response), (int)HttpStatusCode.OK)]
-        public IActionResult Post([FromBody] DispatchPackage.Request request)
+        public IActionResult Post(DispatchPackage.Request request)
         {
             _logger.LogInformation("Incoming!");
             _mediator.Send(request);
@@ -50,8 +51,10 @@ namespace DevTrack.API.Controllers
         }
 
         [HttpPost("{code}/update")]
-        public IActionResult Post(Guid code)
+        public IActionResult Post(Guid code, UpdatePackageStatus.UpdateRequest request)
         {
+            var package = new Package("Package 1", 2.5M);
+            package.StatusUpdate(PackageStatus.InTransit);
             return NoContent();
         }
 
