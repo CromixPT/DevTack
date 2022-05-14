@@ -20,4 +20,18 @@ public class Package
     public DateTime PostedAt { get; private set; }
     public List<PackageUpdate> Updates { get; private set; }
 
+
+    public override string ToString()
+    {
+        return $"Package:{{ \"Code\": {Code} \"Title\": {Title}}}";
+    }
+
+    public void StatusUpdate(PackageStatus status)
+    {
+        Delivered = status == PackageStatus.Delivered;
+
+        var update = new PackageUpdate(status,Id);
+        Updates.Add(update);
+    }
+
 }
