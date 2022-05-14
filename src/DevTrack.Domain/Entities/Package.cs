@@ -10,6 +10,7 @@ public class Package
         Delivered = false;
         PostedAt = DateTime.UtcNow;
         Updates = new();
+
     }
 
     public long Id { get; private set; }
@@ -30,8 +31,21 @@ public class Package
     {
         Delivered = status == PackageStatus.Delivered;
 
-        var update = new PackageUpdate(status,Id);
+        var update = new PackageUpdate(status, Id);
         Updates.Add(update);
+    }
+
+    public void Deconstruct(out Guid code, out string title, out decimal weight,
+        out bool delivered,
+        out DateTime postedAt,
+        out PackageStatus currentStatus)
+    {
+        code = Code;
+        title = Title;
+        weight = Weight;
+        delivered = Delivered;
+        postedAt = PostedAt;
+        currentStatus = Updates.LastOrDefault(p => p.Id == Id)!.Status;
     }
 
 }
