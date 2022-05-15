@@ -1,6 +1,7 @@
 using System.Net;
 using DevTrack.Application.Features.Packages.DispatchPackage;
 using DevTrack.Application.Features.Packages.GetAllPackages;
+using DevTrack.Application.Features.Packages.GetPackageByCode;
 using DevTrack.Application.Features.Packages.UpdatePackageStatus;
 using DevTrack.Domain.Entities;
 using MediatR;
@@ -28,6 +29,9 @@ public class PackagesController : ControllerBase
 
 
     [HttpGet]
+    [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
+    [ProducesResponseType(typeof(ProblemDetails), (int)HttpStatusCode.BadRequest)]
+    [ProducesResponseType(typeof(List<Package>), (int)HttpStatusCode.OK)]
     public async Task<IActionResult> GetAllPackagesAsync()
     {
         var request = new GetPackages.Request();
@@ -37,28 +41,48 @@ public class PackagesController : ControllerBase
 
 
     [HttpGet("{code}", Name = "GetByCode")]
-    public IActionResult GetPackageByCode(Guid code)
+    [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
+    [ProducesResponseType(typeof(ProblemDetails), (int)HttpStatusCode.BadRequest)]
+    [ProducesResponseType(typeof(ProblemDetails), (int)HttpStatusCode.NotFound)]
+    [ProducesResponseType(typeof(Package), (int)HttpStatusCode.OK)]
+    public async Task<IActionResult> GetPackageByCode(Guid code)
     {
-        return Ok(new Package("Package 1", 1.3M));
+        var request = new GetPackageByCode.Request(code);
+        var package = await _mediator.Send(request);
+
+        if (package == null)
+        {
+            return NotFound();
+        }
+        return Ok(package);
+
     }
 
     [HttpPost]
     [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
     [ProducesResponseType(typeof(ProblemDetails), (int)HttpStatusCode.BadRequest)]
-    // [ProducesResponseType(typeof(DispatchPackage.Response), (int)HttpStatusCode.OK)]
+    [ProducesResponseType(typeof(Package), (int)HttpStatusCode.Created)]
     public async Task<IActionResult> PostAsync(DispatchPackage.Request request)
     {
-        _logger.LogInformation("Incoming!");
         var response = await _mediator.Send(request);
-
         return CreatedAtRoute("GetByCode", new { code = response.Package.Code }, response.Package);
     }
 
     [HttpPost("{code}/update")]
-    public IActionResult Post(Guid code, UpdatePackageStatus.UpdateRequest request)
+    [ProducesResponseType((int)HttpStatusCode.InternalServerError)]
+    [ProducesResponseType(typeof(ProblemDetails), (int)HttpStatusCode.BadRequest)]
+    [ProducesResponseType(typeof(ProblemDetails), (int)HttpStatusCode.NotFound)]
+    [ProducesResponseType(typeof(Package), (int)HttpStatusCode.Created)]
+    public async Task<IActionResult> Post(Guid code, UpdatePackageStatus.Request updateRequest)
     {
-        var package = new Package("Package 1", 2.5M);
-        package.StatusUpdate(PackageStatus.InTransit);
+
+        if (code != updateRequest.Package.PackageCode)
+        {
+            return BadRequest();
+        }
+
+        await _mediator.Send(updateRequest);
+
         return NoContent();
     }
 
