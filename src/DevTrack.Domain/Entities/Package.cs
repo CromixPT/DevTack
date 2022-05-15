@@ -10,7 +10,7 @@ public class Package
         Delivered = false;
         PostedAt = DateTime.UtcNow;
         Updates = new();
-
+        CurrentStatus = PackageStatus.Dispacthed;
     }
 
     public long Id { get; private set; }
@@ -20,6 +20,7 @@ public class Package
     public bool Delivered { get; private set; }
     public DateTime PostedAt { get; private set; }
     public List<PackageUpdate> Updates { get; private set; }
+    public PackageStatus CurrentStatus { get; private set; }
 
 
     public override string ToString()
@@ -33,6 +34,7 @@ public class Package
 
         var update = new PackageUpdate(status, Id);
         Updates.Add(update);
+        CurrentStatus = status;
     }
 
     public void Deconstruct(out Guid code, out string title, out decimal weight,
@@ -45,7 +47,7 @@ public class Package
         weight = Weight;
         delivered = Delivered;
         postedAt = PostedAt;
-        currentStatus = Updates.LastOrDefault(p => p.Id == Id)!.Status;
+        currentStatus = CurrentStatus;
     }
 
 }

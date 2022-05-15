@@ -32,9 +32,24 @@ namespace DevTrack.Infrastructure.Repositories
             return packages;
         }
 
-        public Package GetPackageByCode(Guid code)
+        public async Task<Package> GetPackageByCodeAsync(Guid code)
         {
-            var package = _context.Packages.FirstOrDefault(p => p.Code.Equals(code));
+            var package = await _context.Packages.FirstOrDefaultAsync(p => p.Code.Equals(code));
+
+            if (package == default)
+            {
+                return null;
+            }
+
+            return package;
+        }
+
+        public async Task<Package> UpdatePackageStatus(Guid code, PackageStatus status)
+        {
+            var package = await _context.Packages.FirstOrDefaultAsync(p => p.Code.Equals(code));
+
+            package.StatusUpdate(status);
+            await _context.SaveChangesAsync();
 
             return package;
         }
